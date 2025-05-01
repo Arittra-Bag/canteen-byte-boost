@@ -1,4 +1,29 @@
-# Welcome to your Lovable project
+# Canteen Byte Boost
+
+A modern canteen management system that connects students with campus food services. This application allows students to browse canteen menus, place orders, and track their nutrition, while enabling canteen managers to manage menus and fulfill orders.
+
+## Backend Implementation
+
+The application uses Supabase as its backend service, providing authentication, database, and storage capabilities.
+
+### Database Schema
+
+The database consists of the following tables:
+
+- **profiles**: User profiles with roles (student, canteen_manager, admin)
+- **canteens**: Information about campus canteens including location, hours, and cuisine types
+- **menu_items**: Food items available at each canteen with nutritional information
+- **orders**: Customer orders with status tracking
+- **order_items**: Individual items within each order
+- **nutrition_logs**: Daily nutrition tracking for users
+- **nutrition_recommendations**: Personalized nutrition recommendations
+
+### Data Services
+
+The application uses a data service layer to interact with Supabase:
+
+- `supabaseData.ts`: Contains all the functions to interact with the Supabase database
+- Type mapping functions convert between Supabase database types and application types
 
 ## Project info
 
@@ -48,6 +73,36 @@ npm run dev
 - Click on the "Code" button (green button) near the top right.
 - Select the "Codespaces" tab.
 - Click on "New codespace" to launch a new Codespace environment.
+
+## Database Setup
+
+### Supabase Configuration
+
+1. Create a new Supabase project
+2. Navigate to the SQL Editor in your Supabase dashboard
+3. Run the SQL script in `supabase/init.sql` to create the database schema and sample data
+
+### Environment Configuration
+
+1. Create a `.env` file in the project root with your Supabase credentials:
+
+```
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+### Features
+
+**For Students**
+- Browse canteens and menus
+- Place and track orders
+- Monitor nutrition intake
+- Receive personalized nutrition recommendations
+
+**For Canteen Managers**
+- Manage menu items
+- Process and update order status
+- View analytics and reports
 - Edit files directly within the Codespace and commit and push your changes once you're done.
 
 ## What technologies are used for this project?

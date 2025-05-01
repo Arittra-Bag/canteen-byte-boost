@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { getCanteens } from "@/services/mockData";
+import { getCanteens } from "@/services/supabaseData";
 import { Canteen } from "@/types";
 import { SearchIcon, Filter } from "lucide-react";
 import {
@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Home() {
   const [canteens, setCanteens] = useState<Canteen[]>([]);
@@ -21,24 +22,31 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [cuisineFilter, setCuisineFilter] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
   
   const navigate = useNavigate();
   
   useEffect(() => {
     const fetchCanteens = async () => {
+      setLoading(true);
       try {
         const data = await getCanteens();
         setCanteens(data);
         setFilteredCanteens(data);
       } catch (error) {
         console.error("Error fetching canteens:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load canteens. Please try again.",
+          variant: "destructive",
+        });
       } finally {
         setLoading(false);
       }
     };
     
     fetchCanteens();
-  }, []);
+  }, [toast]);
   
   useEffect(() => {
     let result = canteens;

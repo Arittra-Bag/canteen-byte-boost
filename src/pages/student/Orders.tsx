@@ -2,10 +2,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { getOrdersByUser, getMenuItemById, getCanteenById } from "@/services/mockData";
+import { getOrdersByUser, getMenuItemById, getCanteenById } from "@/services/supabaseData";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
 import { MenuItem, Order, Canteen } from "@/types";
+import { toast, useToast } from "@/hooks/use-toast";
 import {
   Card,
   CardContent,
@@ -68,13 +69,18 @@ export default function Orders() {
         setOrders(sortedOrders);
       } catch (error) {
         console.error("Error fetching orders:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load your orders. Please try again.",
+          variant: "destructive",
+        });
       } finally {
         setLoading(false);
       }
     };
     
     fetchOrders();
-  }, [currentUser]);
+  }, [currentUser, toast]);
   
   const filterOrders = (orders: OrderWithDetails[]) => {
     if (filter === "active") {

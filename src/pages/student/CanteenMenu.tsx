@@ -13,7 +13,7 @@ import { useCart } from "@/context/CartContext";
 import {
   getMenuItemsByCanteen,
   getCanteenById,
-} from "@/services/mockData";
+} from "@/services/supabaseData";
 import { MenuItem, Canteen } from "@/types";
 import { ChevronLeft, ShoppingCart, Plus, Minus, Clock } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -48,6 +48,12 @@ export default function CanteenMenu() {
         if (canteenData) {
           setCanteen(canteenData);
           document.title = `${canteenData.name} | ByteBoost`;
+        } else {
+          toast({
+            title: "Canteen Not Found",
+            description: "The requested canteen could not be found.",
+            variant: "destructive",
+          });
         }
         
         // Set the first category as active
@@ -61,7 +67,7 @@ export default function CanteenMenu() {
         console.error("Error fetching data:", error);
         toast({
           title: "Error",
-          description: "Failed to load menu data",
+          description: "Failed to load canteen data. Please try again.",
           variant: "destructive",
         });
       } finally {

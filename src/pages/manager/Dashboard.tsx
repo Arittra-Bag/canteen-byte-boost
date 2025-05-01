@@ -3,8 +3,8 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { mockOrders, mockCanteens, mockMenuItems } from "@/services/mockData";
-import { Order, OrderStatus, OrderFilter } from "@/types";
+import { getOrdersByUser, getCanteenById, getMenuItemById } from "@/services/supabaseData";
+import { Order, OrderStatus, OrderItem } from "@/types";
 import { 
   ShoppingCart, 
   Clock, 
@@ -24,7 +24,7 @@ import { useToast } from "@/components/ui/use-toast";
 export default function ManagerDashboard() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<OrderFilter>("all");
+  const [filter, setFilter] = useState<"all" | "pending" | "preparing" | "ready">("all");
   const { toast } = useToast();
   
   // Calculate summary stats
@@ -39,11 +39,15 @@ export default function ManagerDashboard() {
     const loadDashboard = async () => {
       setLoading(true);
       try {
-        // In a real app, we'd fetch the canteen manager's orders
-        // For demo, just use the mock orders
+        // In a real app, we'd get the manager's ID from auth context
+        // For now, we'll use a hardcoded ID
+        const managerId = "1"; // Replace with actual manager ID from auth context
+        
         const today = new Date().toISOString().split("T")[0];
         
-        const ordersData = mockOrders;
+        // Get orders for the canteen managed by this user
+        // In a real app, we'd filter by canteen ID associated with this manager
+        const ordersData = await getOrdersByUser(managerId);
         
         // Calculate stats
         const todayOrders = ordersData.filter((order) =>
@@ -68,15 +72,20 @@ export default function ManagerDashboard() {
         setOrders(ordersData);
       } catch (error) {
         console.error("Error loading dashboard:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load dashboard data. Please try again.",
+          variant: "destructive",
+        });
       } finally {
         setLoading(false);
       }
     };
     
     loadDashboard();
-  }, []);
+  }, [toast]);
   
-  const getOrdersByStatus = (status?: OrderFilter) => {
+  const getOrdersByStatus = (status?: "all" | "pending" | "preparing" | "ready") => {
     if (!status || status === "all") {
       return orders.filter(order => 
         order.status === "pending" || 
@@ -87,36 +96,93 @@ export default function ManagerDashboard() {
     return orders.filter((order) => order.status === status);
   };
 
-  const getMenuItemName = (menuItemId: string) => {
-    const item = mockMenuItems.find((item) => item.id === menuItemId);
-    return item ? item.name : "Unknown Item";
-  };
+  // State for cached menu items and canteens
+  const [menuItemsCache, setMenuItemsCache] = useState<Record<string, string>>({});
+  const [canteensCache, setCanteensCache] = useState<Record<string, string>>({});
   
-  const getCanteenName = (canteenId: string) => {
-    const canteen = mockCanteens.find((canteen) => canteen.id === canteenId);
-    return canteen ? canteen.name : "Unknown Canteen";
-  };
-  
-  const updateOrderStatus = (orderId: string, newStatus: OrderStatus) => {
-    setOrders((prevOrders) =>
-      prevOrders.map((order) =>
-        order.id === orderId ? { ...order, status: newStatus } : order
-      )
-    );
+  const getMenuItemName = async (menuItemId: string) => {
+    // Check cache first
+    if (menuItemsCache[menuItemId]) {
+      return menuItemsCache[menuItemId];
+    }
     
-    // Display success message
-    toast({
-      title: "Order Updated",
-      description: `Order status changed to ${newStatus}`,
-    });
-    
-    // Update stats
-    if (newStatus === "completed") {
-      setStats((prev) => ({
+    try {
+      const item = await getMenuItemById(menuItemId);
+      const name = item ? item.name : "Unknown Item";
+      
+      // Update cache
+      setMenuItemsCache(prev => ({
         ...prev,
-        completedOrders: prev.completedOrders + 1,
-        pendingOrders: prev.pendingOrders - 1,
+        [menuItemId]: name
       }));
+      
+      return name;
+    } catch (error) {
+      console.error(`Error fetching menu item ${menuItemId}:`, error);
+      return "Unknown Item";
+    }
+  };
+  
+  const getCanteenName = async (canteenId: string) => {
+    // Check cache first
+    if (canteensCache[canteenId]) {
+      return canteensCache[canteenId];
+    }
+    
+    try {
+      const canteen = await getCanteenById(canteenId);
+      const name = canteen ? canteen.name : "Unknown Canteen";
+      
+      // Update cache
+      setCanteensCache(prev => ({
+        ...prev,
+        [canteenId]: name
+      }));
+      
+      return name;
+    } catch (error) {
+      console.error(`Error fetching canteen ${canteenId}:`, error);
+      return "Unknown Canteen";
+    }
+  };
+  
+  const updateOrderStatus = async (orderId: string, newStatus: OrderStatus) => {
+    try {
+      // Import the function to update order status
+      const supabaseData = await import('@/services/supabaseData');
+      const updateOrder = supabaseData.updateOrderStatus;
+      
+      // Call the API to update the order status
+      await updateOrder(orderId, newStatus);
+      
+      // Update local state
+      setOrders((prevOrders) =>
+        prevOrders.map((order) =>
+          order.id === orderId ? { ...order, status: newStatus } : order
+        )
+      );
+      
+      // Display success message
+      toast({
+        title: "Order Updated",
+        description: `Order status changed to ${newStatus}`,
+      });
+      
+      // Update stats
+      if (newStatus === "completed") {
+        setStats((prev) => ({
+          ...prev,
+          completedOrders: prev.completedOrders + 1,
+          pendingOrders: prev.pendingOrders - 1,
+        }));
+      }
+    } catch (error) {
+      console.error("Error updating order status:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update order status. Please try again.",
+        variant: "destructive",
+      });
     }
   };
   
@@ -328,7 +394,9 @@ export default function ManagerDashboard() {
                         </Badge>
                       </div>
                       <div className="text-sm text-muted-foreground mt-1">
-                        {getCanteenName(order.canteenId)} • {getOrderDate(order.placedAt)}
+<>
+  {canteensCache[order.canteenId] || "Loading..."} • {getOrderDate(order.placedAt)}
+</>
                       </div>
                     </div>
                     
@@ -387,7 +455,7 @@ export default function ManagerDashboard() {
                     <ul className="pl-6 space-y-1">
                       {order.items.map((item) => (
                         <li key={`${order.id}-${item.menuItemId}`} className="list-disc">
-                          {getMenuItemName(item.menuItemId)} × {item.quantity}
+                          {menuItemsCache[item.menuItemId] || "Loading..."} × {item.quantity}
                         </li>
                       ))}
                     </ul>

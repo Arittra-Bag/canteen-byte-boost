@@ -33,12 +33,18 @@ interface DailyNutrients {
   [date: string]: NutrientTotal;
 }
 
+interface NutritionRecommendation {
+  id: string;
+  title: string;
+  description: string;
+}
+
 export default function Nutrition() {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
   
   const [loading, setLoading] = useState(true);
-  const [recommendations, setRecommendations] = useState<any[]>([]);
+  const [recommendations, setRecommendations] = useState<NutritionRecommendation[]>([]);
   const [dailyIntake, setDailyIntake] = useState<DailyNutrients>({});
   const [chartView, setChartView] = useState<"week" | "month">("week");
   
@@ -57,7 +63,7 @@ export default function Nutrition() {
       try {
         // Fetch recommendations
         const recommendationsData = await getNutritionRecommendations(currentUser.id);
-        setRecommendations(recommendationsData);
+        setRecommendations(recommendationsData as NutritionRecommendation[]);
         
         // Fetch orders and calculate nutrition intake
         const orders = await getOrdersByUser(currentUser.id);

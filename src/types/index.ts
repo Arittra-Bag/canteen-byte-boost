@@ -47,6 +47,9 @@ export interface CartItem {
   menuItem: MenuItem;
 }
 
+export type OrderStatus = 'pending' | 'preparing' | 'ready' | 'completed' | 'cancelled';
+export type OrderFilter = OrderStatus | 'all';
+
 export interface Order {
   id: string;
   userId: string;
@@ -57,7 +60,7 @@ export interface Order {
     price: number;
   }[];
   totalAmount: number;
-  status: 'pending' | 'preparing' | 'ready' | 'completed' | 'cancelled';
+  status: OrderStatus;
   placedAt: string;
   pickupTime?: string;
 }

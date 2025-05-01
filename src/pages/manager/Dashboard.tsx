@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { mockOrders, mockCanteens, mockMenuItems } from "@/services/mockData";
-import { Order, MenuItem } from "@/types";
+import { Order, OrderStatus, OrderFilter } from "@/types";
 import { 
   ShoppingCart, 
   Clock, 
@@ -24,7 +24,7 @@ import { useToast } from "@/components/ui/use-toast";
 export default function ManagerDashboard() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<"all" | "pending" | "preparing" | "ready">("all");
+  const [filter, setFilter] = useState<OrderFilter>("all");
   const { toast } = useToast();
   
   // Calculate summary stats
@@ -76,7 +76,7 @@ export default function ManagerDashboard() {
     loadDashboard();
   }, []);
   
-  const getOrdersByStatus = (status?: Order["status"]) => {
+  const getOrdersByStatus = (status?: OrderFilter) => {
     if (!status || status === "all") {
       return orders.filter(order => 
         order.status === "pending" || 
@@ -97,7 +97,7 @@ export default function ManagerDashboard() {
     return canteen ? canteen.name : "Unknown Canteen";
   };
   
-  const updateOrderStatus = (orderId: string, newStatus: Order["status"]) => {
+  const updateOrderStatus = (orderId: string, newStatus: OrderStatus) => {
     setOrders((prevOrders) =>
       prevOrders.map((order) =>
         order.id === orderId ? { ...order, status: newStatus } : order

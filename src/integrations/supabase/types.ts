@@ -9,7 +9,293 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      canteens: {
+        Row: {
+          closing_time: string
+          cuisine: string[]
+          id: string
+          image: string | null
+          location: string
+          manager_id: string | null
+          name: string
+          opening_time: string
+          rating: number
+        }
+        Insert: {
+          closing_time: string
+          cuisine: string[]
+          id?: string
+          image?: string | null
+          location: string
+          manager_id?: string | null
+          name: string
+          opening_time: string
+          rating?: number
+        }
+        Update: {
+          closing_time?: string
+          cuisine?: string[]
+          id?: string
+          image?: string | null
+          location?: string
+          manager_id?: string | null
+          name?: string
+          opening_time?: string
+          rating?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "canteens_manager_id_fkey"
+            columns: ["manager_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      menu_items: {
+        Row: {
+          available: boolean
+          calories: number
+          canteen_id: string
+          carbs: number
+          category: string
+          description: string | null
+          fat: number
+          id: string
+          image: string | null
+          is_veg: boolean
+          name: string
+          popular: boolean | null
+          price: number
+          protein: number
+        }
+        Insert: {
+          available?: boolean
+          calories: number
+          canteen_id: string
+          carbs: number
+          category: string
+          description?: string | null
+          fat: number
+          id?: string
+          image?: string | null
+          is_veg?: boolean
+          name: string
+          popular?: boolean | null
+          price: number
+          protein: number
+        }
+        Update: {
+          available?: boolean
+          calories?: number
+          canteen_id?: string
+          carbs?: number
+          category?: string
+          description?: string | null
+          fat?: number
+          id?: string
+          image?: string | null
+          is_veg?: boolean
+          name?: string
+          popular?: boolean | null
+          price?: number
+          protein?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_items_canteen_id_fkey"
+            columns: ["canteen_id"]
+            isOneToOne: false
+            referencedRelation: "canteens"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      nutrition_logs: {
+        Row: {
+          date: string
+          id: string
+          total_calories: number
+          total_carbs: number
+          total_fat: number
+          total_protein: number
+          user_id: string
+        }
+        Insert: {
+          date?: string
+          id?: string
+          total_calories?: number
+          total_carbs?: number
+          total_fat?: number
+          total_protein?: number
+          user_id: string
+        }
+        Update: {
+          date?: string
+          id?: string
+          total_calories?: number
+          total_carbs?: number
+          total_fat?: number
+          total_protein?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nutrition_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      nutrition_recommendations: {
+        Row: {
+          created_at: string
+          id: string
+          recommendation: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          recommendation: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          recommendation?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nutrition_recommendations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_items: {
+        Row: {
+          id: string
+          menu_item_id: string | null
+          order_id: string
+          price: number
+          quantity: number
+        }
+        Insert: {
+          id?: string
+          menu_item_id?: string | null
+          order_id: string
+          price: number
+          quantity: number
+        }
+        Update: {
+          id?: string
+          menu_item_id?: string | null
+          order_id?: string
+          price?: number
+          quantity?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_menu_item_id_fkey"
+            columns: ["menu_item_id"]
+            isOneToOne: false
+            referencedRelation: "menu_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          canteen_id: string
+          id: string
+          pickup_time: string | null
+          placed_at: string
+          status: string
+          total_amount: number
+          user_id: string
+        }
+        Insert: {
+          canteen_id: string
+          id?: string
+          pickup_time?: string | null
+          placed_at?: string
+          status: string
+          total_amount: number
+          user_id: string
+        }
+        Update: {
+          canteen_id?: string
+          id?: string
+          pickup_time?: string | null
+          placed_at?: string
+          status?: string
+          total_amount?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_canteen_id_fkey"
+            columns: ["canteen_id"]
+            isOneToOne: false
+            referencedRelation: "canteens"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          name: string
+          profile_img: string | null
+          role: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id: string
+          name: string
+          profile_img?: string | null
+          role: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          profile_img?: string | null
+          role?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

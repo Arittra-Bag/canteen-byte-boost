@@ -52,10 +52,11 @@ export default function Register() {
         description: "Your account has been created",
       });
       navigate("/");
-    } catch (error) {
+    } catch (error: any) {
+      console.error("Registration error:", error);
       toast({
         title: "Registration Failed",
-        description: "There was an error creating your account",
+        description: error.message || "There was an error creating your account",
         variant: "destructive",
       });
     } finally {
